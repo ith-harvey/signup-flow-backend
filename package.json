@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "knex": "knex"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^1.0.3",
+    "body-parser": "^1.18.2",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.0",
+    "jsonwebtoken": "^8.0.1",
+    "knex": "^0.13.0",
+    "pg": "^7.3.0",
+    "request-promise": "^4.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}

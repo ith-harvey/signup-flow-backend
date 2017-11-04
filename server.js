@@ -8,9 +8,6 @@ const bodyParser = require('body-parser')
 
 const auth = require('./routes/auth.js')
 
-app.use(bodyParser.json());
-
-
 // Allow Coors
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", 'https://mysterious-beyond-57369.herokuapp.com/'); //<-- you can change this with a specific url like http://localhost:4200
@@ -19,6 +16,11 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,content-type,application/json');
     next();
 });
+
+app.use(bodyParser.json());
+
+
+
 
   if ('OPTIONS' == req.method) {
     res.sendStatus(200);

@@ -39,7 +39,7 @@ app.get("/", function(req, res) {
 
 
 
-app.listen(port, function(error) {
+app.listen(process.env.PORT || 5000, function(error) {
   if (error) {
     console.error(error)
   } else {

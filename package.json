@@ -19,8 +19,7 @@
     "express": "^4.16.0",
     "jsonwebtoken": "^8.0.1",
     "knex": "^0.13.0",
-    "pg": "^7.3.0",
-    "request-promise": "^4.2.2"
+    "pg": "^7.3.0"
   },
   "devDependencies": {
     "nodemon": "^1.12.1"

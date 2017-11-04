@@ -4,7 +4,7 @@ module.exports = {
 
   development: {
     client: 'pg',
-    connection: `postgres://localhost/crypto_piggy`,
+    connection: `postgres://localhost/signupflow`,
     migrations: {
       directory: path.join(__dirname, 'db', 'migrations')
     },

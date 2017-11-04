@@ -3,74 +3,101 @@ const router = express.Router();
 const db = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
-const utils = require('./utils')
+require('dotenv').config()
+const dbQueryandUtilandUtil = require('./queriesAndUtil')
 
-router.post('/signin', function(req, res, next) {
-  console.log('body', req.body);
-  db('users').where('username',req.body.username).select('*').then( user => {
-    console.log('user',user);
+
+router.post('/signup', function(req, res, next) {
+  // essentially a GET request
+  //check the token's ID pull the record in the system and return to user
+  jwt.verify(req.body.token, process.env.JWT_SECRET, (err,decoded) => {
+
+    dbQueryandUtil.getUserById(decoded.id).then( user => {
+      user = user[0]
+
+      if (!user) {
+        res.status(401).json({
+          error: true,
+          message: 'name or Password is Wrong'
+        });
+      }
+      const cliResp = dbQueryandUtil.buildUserPlusToken(user)
+      res.json(cliResp);
+    });
+
+  })
+})
+
+
+router.put('/signupsave', function (req, res, next) {
+  // check if user exists -> if they do perform a PUT
+  // if they don't:
+    // ----> check if the info is already in db
+    // ---> if not insert
+
+  // const hash = bcrypt.hashSync(req.body.password.trim(), 10);
+
+  if (req.body.token) {
+    // user already has information in DB (they have a token)
+    jwt.verify(req.body.token, process.env.JWT_SECRET, function(err, decoded) {
+
+    dbQueryandUtil.getUserById(decoded.id).then( user => {
+        user = user[0]
+        const reInsertUser = {
+          id: decoded.id,
+          name: req.body.name.trim(),
+          email: req.body.email,
+          hash_pass: req.body.password.trim(),
+        };
+
+        if(req.body.subscription){
+          reInsertUser.subscription = req.body.subscription
+        }
+
+        db('users').update(reInsertUser).where('id',reInsertUser.id).returning('id').then( response => {
+
+          const cliResp = dbQueryandUtil.buildUserPlusToken(reInsertUser)
+
+          res.json(cliResp);
+        })
+      })
+    })
+  } else {
+    // don't have a token (haven't inserted || cleared browser)
+      // if user enters in a name already in DB
+      //  --> return 'user already exists'
+      // else
+      // --> insert
+
+  db('users').where('name',req.body.name).select('*').then( user => {
     user = user[0]
-    if (!user) {
-      console.log('in bad if');
+    if (user) {
       res.status(401).json({
         error: true,
-        message: 'Username or Password is Wrong'
+        message: 'User already exists in system. Please try registering with a different name'
       });
+    } else {
+        const user = {
+         name: req.body.name.trim(),
+         email: req.body.email,
+         hash_pass: req.body.password.trim()
+        }
+
+        db('users').insert(user).returning('id').then( response => {
+          user.id = response[0]
+          const cliResp = dbQueryandUtil.buildUserPlusToken(user)
+          res.json(cliResp);
+        })
     }
-    console.log('pass from db', user.hash_pass);
-    console.log('pass from user', req.body.password);
-    bcrypt.compare(req.body.password, user.hash_pass, function (err, valid) {
-      if (!valid) {
-       return res.status(404).json({
-               error: true,
-               message: 'Username or Password is Wrong'
-         });
-      }
-      delete user.hash_pass
-      delete user.created_at
-      delete user.updated_at
-      console.log('users',user)
-      let data = {
-        id: user.id,
-        username: user.username
-      }
-      const token = jwt.sign(data, 'AKJOISDNFLKHALKNDSFIOHSLKJDSFLKHSDIOES');
-      res.json({
-         user: user,
-         token: token
-       });
-     })
   }).catch( err => {
-    console.log(err);
+  console.log(err);
   })
-});
+}
+})
 
-
-router.post('/signup', function (req, res, next) {
-  const body = req.body;
-  console.log('body',req.body);
-  const hash = bcrypt.hashSync(body.password.trim(), 10);
-  const user = {
-    username: body.username.trim(),
-    hash_pass: hash,
-  };
-
-  db('users').insert(user).then( response => {
-    delete user.hash_pass
-    const token = jwt.sign(user, 'AKJOISDNFLKHALKNDSFIOHSLKJDSFLKHSDIOES');
-    console.log(token)
-    res.json({
-       user: user,
-       token: token
-    });
-  })
-});
-
-// router.delete('/logout', funciton (req,res,next) {
-//
-// })
 
 router.get('/', function (req,res,next) {
+  console.log('hitting Route!!!')
   res.send('Welcome to auth!')
 })
 
